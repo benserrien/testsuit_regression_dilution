@@ -1,6 +1,6 @@
 ---
 title: "Regressie dilutie"
-output: html_document
+output: github_document
 date: "`r Sys.Date()`"
 ---
 
@@ -131,22 +131,58 @@ tibble(
   estimate = beta_star_hat,
   ll       = beta_star_hatCI[1],
   ul       = beta_star_hatCI[2]
-)
+) %>% knitr::kable()
 ```
 
 <br>
 
 # Bayesiaanse inferentie
 
-We proberen nu dezelfde methode te volgen, maar met Bayesiaanse inferentie. We fitten eerst de r
+We proberen nu dezelfde methode te volgen, maar met Bayesiaanse inferentie. We fitten eerst beide regressie modellen met default priors uit het `brms` package.
 
 ```{r, message=F}
+# suppress messages after inspection of models
 # model voor Y ~ W (hoofdstudie)
-m0.bayes    <- brm(y ~ w, data = data.df, silent = 2, refresh = 0)
+m0.bayes <- brm(y ~ w, data = data.df,
+                chains = 4, iter = 2000, warmup = 1000,
+                silent = 2, refresh = 0)
 # mixed model voor W (substudie)
-m.sub.bayes <- brm(w ~ 1 + (1|Id), data = data.df.sub, silent = 2, refresh = 0)
+# hier was meer verdunning nodig (hoge acf, kleine ESS)
+m.sub.bayes <- brm(w ~ 1 + (1|Id), data = data.df.sub,
+                   chains = 4, iter = 5000, warmup = 1000, thin = 10,
+                   control = list(adapt_delta = 0.9),
+                   silent = 2, refresh = 0)
 ```
 
+De samples van de slope parameter uit de posterior van het model `m0.bayes` vermenigvuldigen we met de samples van de correctie-factor uit de posterior van het andere model (`m.sub.bayes`) om zo tot de gecorrigeerde slope parameter te komen. Deze schatting en het 95% CrI liggen dicht bij de waarden bekomen met klassieke inferentie.
+
+```{r}
+samples.b_w <- m0.bayes %>%
+  spread_draws(b_w)
+
+samples.ICC_lambda <- m.sub.bayes %>%
+  spread_draws(sd_Id__Intercept, sigma) %>%
+  mutate(
+    icc = sd_Id__Intercept^2 / (sd_Id__Intercept^2 + sigma^2),
+    lambda = 1 / icc
+  )
+
+samples.b_x <- expand_grid(
+  b_w = samples.b_w$b_w,
+  lambda = samples.ICC_lambda$lambda
+) %>%
+  mutate(b_x_hat = b_w * lambda)
+
+samples.b_x %>%
+  ggplot(aes(b_x_hat)) +
+  stat_halfeye()
+
+median_qi(samples.b_x$b_x_hat) %>% knitr::kable()
+```
+
+# Bayesiaanse inferentie (2)
+
+mi() functie uit brms?
 
 
 
