@@ -180,10 +180,6 @@ samples.b_x %>%
 median_qi(samples.b_x$b_x_hat) %>% knitr::kable()
 ```
 
-# Bayesiaanse inferentie (2)
-
-mi() functie uit brms?
-
 
 
 

@@ -1,6 +1,6 @@
 Regressie dilutie
 ================
-2026-03-06
+2026-03-09
 
 ``` r
 library(tidyverse)
@@ -193,23 +193,6 @@ uit het `brms` package.
 m0.bayes <- brm(y ~ w, data = data.df,
                 chains = 4, iter = 2000, warmup = 1000,
                 silent = 2, refresh = 0)
-```
-
-    ## Running /Library/Frameworks/R.framework/Resources/bin/R CMD SHLIB foo.c
-    ## using C compiler: ‘Apple clang version 17.0.0 (clang-1700.6.4.2)’
-    ## using SDK: ‘MacOSX26.2.sdk’
-    ## clang -arch arm64 -std=gnu2x -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG   -I"/Users/ben/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/Rcpp/1.1.1/60df6f11cbeffbf9d50ad0852867f6b6/Rcpp/include/"  -I"/Users/ben/Documents/INBO/voorbereiding INBO/regression_dilution/testsuit_regression_dilution/renv/library/macos/R-4.5/aarch64-apple-darwin20/RcppEigen/include/"  -I"/Users/ben/Documents/INBO/voorbereiding INBO/regression_dilution/testsuit_regression_dilution/renv/library/macos/R-4.5/aarch64-apple-darwin20/RcppEigen/include/unsupported"  -I"/Users/ben/Documents/INBO/voorbereiding INBO/regression_dilution/testsuit_regression_dilution/renv/library/macos/R-4.5/aarch64-apple-darwin20/BH/include" -I"/Users/ben/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/StanHeaders/2.32.10/c35dc5b81d7ffb1018aa090dff364ecb/StanHeaders/include/src/"  -I"/Users/ben/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/StanHeaders/2.32.10/c35dc5b81d7ffb1018aa090dff364ecb/StanHeaders/include/"  -I"/Users/ben/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/RcppParallel/5.1.11-1/07d228a359f31d8aebe6d2f643c1f012/RcppParallel/include/"  -I"/Users/ben/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/rstan/2.32.7/5f47b80f0db40503697eef138a31a6ef/rstan/include" -DEIGEN_NO_DEBUG  -DBOOST_DISABLE_ASSERTS  -DBOOST_PENDING_INTEGER_LOG2_HPP  -DSTAN_THREADS  -DUSE_STANC3 -DSTRICT_R_HEADERS  -DBOOST_PHOENIX_NO_VARIADIC_EXPRESSION  -D_HAS_AUTO_PTR_ETC=0  -include '/Users/ben/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/StanHeaders/2.32.10/c35dc5b81d7ffb1018aa090dff364ecb/StanHeaders/include/stan/math/prim/fun/Eigen.hpp'  -D_REENTRANT -DRCPP_PARALLEL_USE_TBB=1   -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2  -c foo.c -o foo.o
-    ## In file included from <built-in>:1:
-    ## In file included from /Users/ben/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/StanHeaders/2.32.10/c35dc5b81d7ffb1018aa090dff364ecb/StanHeaders/include/stan/math/prim/fun/Eigen.hpp:22:
-    ## In file included from /Users/ben/Documents/INBO/voorbereiding INBO/regression_dilution/testsuit_regression_dilution/renv/library/macos/R-4.5/aarch64-apple-darwin20/RcppEigen/include/Eigen/Dense:1:
-    ## In file included from /Users/ben/Documents/INBO/voorbereiding INBO/regression_dilution/testsuit_regression_dilution/renv/library/macos/R-4.5/aarch64-apple-darwin20/RcppEigen/include/Eigen/Core:19:
-    ## /Users/ben/Documents/INBO/voorbereiding INBO/regression_dilution/testsuit_regression_dilution/renv/library/macos/R-4.5/aarch64-apple-darwin20/RcppEigen/include/Eigen/src/Core/util/Macros.h:679:10: fatal error: 'cmath' file not found
-    ##   679 | #include <cmath>
-    ##       |          ^~~~~~~
-    ## 1 error generated.
-    ## make: *** [foo.o] Error 1
-
-``` r
 # mixed model voor W (substudie)
 # hier was meer verdunning nodig (hoge acf, kleine ESS)
 m.sub.bayes <- brm(w ~ 1 + (1|Id), data = data.df.sub,
@@ -217,20 +200,6 @@ m.sub.bayes <- brm(w ~ 1 + (1|Id), data = data.df.sub,
                    control = list(adapt_delta = 0.9),
                    silent = 2, refresh = 0)
 ```
-
-    ## Running /Library/Frameworks/R.framework/Resources/bin/R CMD SHLIB foo.c
-    ## using C compiler: ‘Apple clang version 17.0.0 (clang-1700.6.4.2)’
-    ## using SDK: ‘MacOSX26.2.sdk’
-    ## clang -arch arm64 -std=gnu2x -I"/Library/Frameworks/R.framework/Resources/include" -DNDEBUG   -I"/Users/ben/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/Rcpp/1.1.1/60df6f11cbeffbf9d50ad0852867f6b6/Rcpp/include/"  -I"/Users/ben/Documents/INBO/voorbereiding INBO/regression_dilution/testsuit_regression_dilution/renv/library/macos/R-4.5/aarch64-apple-darwin20/RcppEigen/include/"  -I"/Users/ben/Documents/INBO/voorbereiding INBO/regression_dilution/testsuit_regression_dilution/renv/library/macos/R-4.5/aarch64-apple-darwin20/RcppEigen/include/unsupported"  -I"/Users/ben/Documents/INBO/voorbereiding INBO/regression_dilution/testsuit_regression_dilution/renv/library/macos/R-4.5/aarch64-apple-darwin20/BH/include" -I"/Users/ben/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/StanHeaders/2.32.10/c35dc5b81d7ffb1018aa090dff364ecb/StanHeaders/include/src/"  -I"/Users/ben/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/StanHeaders/2.32.10/c35dc5b81d7ffb1018aa090dff364ecb/StanHeaders/include/"  -I"/Users/ben/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/RcppParallel/5.1.11-1/07d228a359f31d8aebe6d2f643c1f012/RcppParallel/include/"  -I"/Users/ben/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/rstan/2.32.7/5f47b80f0db40503697eef138a31a6ef/rstan/include" -DEIGEN_NO_DEBUG  -DBOOST_DISABLE_ASSERTS  -DBOOST_PENDING_INTEGER_LOG2_HPP  -DSTAN_THREADS  -DUSE_STANC3 -DSTRICT_R_HEADERS  -DBOOST_PHOENIX_NO_VARIADIC_EXPRESSION  -D_HAS_AUTO_PTR_ETC=0  -include '/Users/ben/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/StanHeaders/2.32.10/c35dc5b81d7ffb1018aa090dff364ecb/StanHeaders/include/stan/math/prim/fun/Eigen.hpp'  -D_REENTRANT -DRCPP_PARALLEL_USE_TBB=1   -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2  -c foo.c -o foo.o
-    ## In file included from <built-in>:1:
-    ## In file included from /Users/ben/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/StanHeaders/2.32.10/c35dc5b81d7ffb1018aa090dff364ecb/StanHeaders/include/stan/math/prim/fun/Eigen.hpp:22:
-    ## In file included from /Users/ben/Documents/INBO/voorbereiding INBO/regression_dilution/testsuit_regression_dilution/renv/library/macos/R-4.5/aarch64-apple-darwin20/RcppEigen/include/Eigen/Dense:1:
-    ## In file included from /Users/ben/Documents/INBO/voorbereiding INBO/regression_dilution/testsuit_regression_dilution/renv/library/macos/R-4.5/aarch64-apple-darwin20/RcppEigen/include/Eigen/Core:19:
-    ## /Users/ben/Documents/INBO/voorbereiding INBO/regression_dilution/testsuit_regression_dilution/renv/library/macos/R-4.5/aarch64-apple-darwin20/RcppEigen/include/Eigen/src/Core/util/Macros.h:679:10: fatal error: 'cmath' file not found
-    ##   679 | #include <cmath>
-    ##       |          ^~~~~~~
-    ## 1 error generated.
-    ## make: *** [foo.o] Error 1
 
 De samples van de slope parameter uit de posterior van het model
 `m0.bayes` vermenigvuldigen we met de samples van de correctie-factor
@@ -269,7 +238,3 @@ median_qi(samples.b_x$b_x_hat) %>% knitr::kable()
 |         y |      ymin |     ymax | .width | .point | .interval |
 |----------:|----------:|---------:|-------:|:-------|:----------|
 | 0.9390701 | 0.8773828 | 1.036126 |   0.95 | median | qi        |
-
-# Bayesiaanse inferentie (2)
-
-mi() functie uit brms?
