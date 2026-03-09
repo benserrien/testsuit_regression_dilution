@@ -85,9 +85,13 @@ nms <- 3 # herhaalde metingen per subject, dit hoeft niet per se hetzelfde aanta
 # data.frame met herhaalde metingen w per subject:
 data.df.sub <- data.df %>%
   filter(Id %in% idx_substudy) %>%
-  select(-w) %>% # verwijder w om per subject nms w's te samplen
   expand_grid(Id.sub = 1:nms) %>%
-  mutate(w = rnorm(n(), x, sqrt(sigma2_w)))
+  mutate(
+    # behoud w_1 en trek nieuwe steekproef voor extra herhaalde metingen
+    w = case_when(Id.sub == 1 ~ w,
+                  TRUE        ~ NA_real_),
+    w = coalesce(w, rnorm(n(), x, sqrt(sigma2_w)))
+  )
 ```
 
 Onderstaande figuur toont de data van de substudie. De zwarte punten zijn de herhaalde metingen van de predictor. De rode punten met horizontale errorbars zijn niet waargenomen in de (sub-)studie maar geven de echte waarde van de predictor weer (rood punt) en de onzekerheid van de predictor (+/- 1 SD van de meetfout op de predictor).
