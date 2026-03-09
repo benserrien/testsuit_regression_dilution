@@ -1,0 +1,96 @@
+---
+title: "smatr3 package: (Standardized) Major Axis (PCA)"
+output: github_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, warning=F, message=F}
+library(tidyverse)
+library(smatr)
+```
+
+# Warton et al. (2006) Biol. Rev.
+
+Samenvatting van de methoden uit Warton et al. Er is een R package beschikbaar die de (S)MA methodologie beschikbaar maakt: `smatr`. De methode van MA en SMA is gelijkaardig aan PCA en PCA op gestandaardiseerde data. Er wordt dus geen onderscheid gemaakt tussen uitkomst/predictor (symmetrie).  
+
+```{r}
+data("leaflife")
+data("leafmeas")
+```
+
+
+```{r, message=F}
+# Extract only low-nutrient, low-rainfall data from leaflife dataset:
+leaf.low <- subset(leaflife, soilp == 'low' & rain == 'low')
+
+ggplot(leaf.low, aes(lma, longev)) +
+  geom_point() +
+  geom_smooth() +
+  geom_smooth(method = "lm", se = F, color = "red")
+ggplot(leaf.low, aes(log(lma), log(longev))) +
+  geom_point() +
+  geom_smooth() +
+  geom_smooth(method = "lm", se = F, color = "red")
+```
+
+```{r}
+# Fit a single MA for log(leaf longevity) vs log(leaf mass per area):
+ma.fit <- ma(longev ~ lma, log='xy', data=leaf.low)
+summary(ma.fit)
+plot(ma.fit)
+```
+
+```{r}
+# Fit a single SMA for log(leaf longevity) vs log(leaf mass per area):
+sma.fit <- sma(longev ~ lma, log='xy', data=leaf.low)
+summary(sma.fit)
+plot(sma.fit)
+```
+
+```{r}
+# Test if the MA slope is not significantly different from 1 for longevity and leaf mass per area (LMA):
+ma_obj <- ma(longev ~ lma, log='xy', slope.test=1, data=leaflife) 
+
+summary(ma_obj)
+plot(ma_obj)
+```
+
+
+
+```{r, message = F}
+# verdere exploratie
+ggplot(leaflife, aes(log10(lma), log10(longev), color = rain)) +
+  facet_wrap(~ soilp) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+Bovenstaande plot geeft weer dat het effect van `rain` verschilt tussen de twee levels van `soilp`, dus normaal zouden we 3 predictoren in het model steken: `lma * rain * soilp`, maar het `smatr` package kan enkel twee predictoren nemen. We negeren dus `soilp` in onderstaande analyse. 
+
+```{r}
+# testing for common slope
+sma.fit2 <- sma(longev ~ lma * rain, log = "xy", 
+                data = leaflife)
+summary(sma.fit2) # no evidence that the slopes are different
+plot(sma.fit2)
+
+# testing for common elevation
+sma.fit3 <- sma(longev ~ lma + rain, log = "xy",
+                data = leaflife)
+summary(sma.fit3) # elevation is significantly different between rain levels
+plot(sma.fit3)
+
+# testing assumptions
+plot(residuals(sma.fit3), fitted(sma.fit3))
+qqnorm(residuals(sma.fit3))
+```
+
+```{r}
+# Estimate measurement error variance matrix, store in "meas.vr"
+meas.vr <- meas.est(leafmeas[,3:4], leafmeas$spp)
+meas.vr
+```
+
