@@ -1,23 +1,17 @@
----
-title: "Exploratie met het MCR package"
-output: github_document
-date: "`r Sys.Date()`"
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+Exploratie met het MCR package
+================
+2026-03-15
 
 # Regressie methoden uit het `mcr` package
 
-```{r, warning=F, message=F}
+``` r
 library(tidyverse)
 library(mcr)
 ```
 
 We nemen dezelfde setup als bij de paper van Frost & Thompson:
 
-```{r}
+``` r
 set.seed(123)
 
 # notatie uit het artikel
@@ -57,43 +51,47 @@ data.df.sub <- data.df %>%
 
 <br>
 
-## Resultaten met verschillende regressie-methoden {.tabset}
+## Resultaten met verschillende regressie-methoden
 
 ### Lineaire regressie
 
-```{r}
+``` r
 m1 <- with(data.df, mcreg(w, y, 
                           method.reg = "LinReg",
                           method.ci = "analytical"))
 plot(m1)
 ```
-### Deming regressie
 
-```{r}
+![](regressie-mcr-package_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+\### Deming regressie
+
+``` r
 m2 <- with(data.df, mcreg(w, y, 
                           method.reg = "Deming",
                           method.ci = "analytical"))
 plot(m2)
 ```
 
+![](regressie-mcr-package_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
 ### Theil-Sen regressie
 
-```{r}
+``` r
 m3 <- with(data.df, mcreg(w, y, 
                           method.reg = "TS",
                           method.ci = "analytical"))
 plot(m3)
 ```
 
+![](regressie-mcr-package_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
 ### Passing-Bablok regressie
 
-```{r}
+``` r
 m4 <- with(data.df, mcreg(w, y, 
                           method.reg = "PBequi",
                           method.ci = "analytical"))
 plot(m4)
 ```
 
-
-
-
+![](regressie-mcr-package_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
