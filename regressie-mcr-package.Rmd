@@ -57,9 +57,7 @@ data.df.sub <- data.df %>%
 
 <br>
 
-## Resultaten met verschillende regressie-methoden {.tabset}
-
-### Lineaire regressie
+## Resultaten met verschillende regressie-methoden 
 
 ```{r}
 m1 <- with(data.df, mcreg(w, y, 
@@ -67,26 +65,18 @@ m1 <- with(data.df, mcreg(w, y,
                           method.ci = "analytical"))
 plot(m1)
 ```
-### Deming regressie
-
 ```{r}
 m2 <- with(data.df, mcreg(w, y, 
                           method.reg = "Deming",
                           method.ci = "analytical"))
 plot(m2)
 ```
-
-### Theil-Sen regressie
-
 ```{r}
 m3 <- with(data.df, mcreg(w, y, 
                           method.reg = "TS",
                           method.ci = "analytical"))
 plot(m3)
 ```
-
-### Passing-Bablok regressie
-
 ```{r}
 m4 <- with(data.df, mcreg(w, y, 
                           method.reg = "PBequi",
@@ -95,5 +85,5 @@ plot(m4)
 ```
 
 
-
+Het `mcr` package kan niet gebruikt worden met herhaalde metingen ....
 

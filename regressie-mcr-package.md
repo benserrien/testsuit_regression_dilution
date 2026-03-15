@@ -53,8 +53,6 @@ data.df.sub <- data.df %>%
 
 ## Resultaten met verschillende regressie-methoden
 
-### Lineaire regressie
-
 ``` r
 m1 <- with(data.df, mcreg(w, y, 
                           method.reg = "LinReg",
@@ -63,7 +61,6 @@ plot(m1)
 ```
 
 ![](regressie-mcr-package_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
-\### Deming regressie
 
 ``` r
 m2 <- with(data.df, mcreg(w, y, 
@@ -74,8 +71,6 @@ plot(m2)
 
 ![](regressie-mcr-package_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
-### Theil-Sen regressie
-
 ``` r
 m3 <- with(data.df, mcreg(w, y, 
                           method.reg = "TS",
@@ -85,8 +80,6 @@ plot(m3)
 
 ![](regressie-mcr-package_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
-### Passing-Bablok regressie
-
 ``` r
 m4 <- with(data.df, mcreg(w, y, 
                           method.reg = "PBequi",
@@ -95,3 +88,5 @@ plot(m4)
 ```
 
 ![](regressie-mcr-package_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+Het `mcr` package kan niet gebruikt worden met herhaalde metingen ….
