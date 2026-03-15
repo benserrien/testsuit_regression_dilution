@@ -1,0 +1,168 @@
+---
+title: "Errors-in-variables modeling met brms me() termen"
+output: github_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, warning=F, message=F}
+library(tidyverse)
+library(brms)
+library(tidybayes)
+```
+
+
+# `me` terms uit het `brms` package
+
+Het R package `brms` bevat de functie `me` to take measurement error in the predictor into account while modeling. We gebruiken dezelfde setup als bij regressie dilutie.
+
+```{r}
+set.seed(123)
+
+# notatie uit het artikel
+N <- 1000 # aantal stat. units in de studie
+n <- 50 # aantal stat. units in de sub-studie met herhaalde metingen
+mu <- 0 # gemiddelde van de echte predictor (X)
+sigma2_b <- 1 # variantie van de echte predictor (X)
+x <- rnorm(N, mu, sqrt(sigma2_b)) # gerealiseerde waarden van de predictor
+sigma2_w <- .2 # variantie van de meetfouten in X
+u <- rnorm(N, 0, sqrt(sigma2_w)) # gerealiseerde meetfouten in X
+w <- x + u # waargenomen predictor = predictor + meetfout
+alpha_star <- 0 # intercept voor relatie Y ~ X
+beta_star  <- 1 # slope voor relatie Y ~ X
+phi2  <- .1 # residuele variantie voor de relatie Y ~ X
+delta <- rnorm(N, 0, sqrt(phi2)) # residuele error Y
+y <- alpha_star + beta_star * x + delta # uitkomst variabele
+
+# data.frame met ID's voor de stat. units
+data.df <- data.frame(y, x, w) %>%
+  mutate(Id = paste0("ID_", 1:N), .before = y)
+```
+
+We gebruiken eerst de gekende SD van de meetfouten op $X$. In realiteit zal deze echter geschat moeten worden.
+
+```{r}
+data.df$sigma_w <- sqrt(sigma2_w)
+m0 <- brm(
+  y ~ me(w, sdx = sigma_w),
+  data = data.df
+)
+summary(m0)
+plot(m0)
+
+# vergelijking met de echte waarde (beta_star = 1) toont in deze dataset aan dat het 95% CrI de echte waarde niet omvat (bias op de schatting)
+hyp <- hypothesis(m0, "bsp_mewsdxEQsigma_w = 1", class = NULL)
+print(hyp); plot(hyp)
+```
+
+We schatten nu de SD van de meetfouten in $X$ met een mixed model uit een sub-studie.
+
+```{r}
+# subject-Ids voor de substudie
+idx_substudy <- sample(data.df$Id, n, replace = F)
+nms <- 3 # herhaalde metingen per subject, dit hoeft niet per se hetzelfde aantal te zijn per subject
+
+# data.frame met herhaalde metingen w per subject:
+data.df.sub <- data.df %>%
+  filter(Id %in% idx_substudy) %>%
+  expand_grid(Id.sub = 1:nms) %>%
+  mutate(
+    # behoud w_1 en trek nieuwe steekproef voor extra herhaalde metingen
+    w = case_when(Id.sub == 1 ~ w,
+                  TRUE        ~ NA_real_),
+    w = coalesce(w, rnorm(n(), x, sqrt(sigma2_w)))
+  )
+
+# de SD van de meetfouten is de residuele variantie na correctie voor random intercepts per Id
+m.sub <- brm(
+  w ~ 1 + (1|Id),
+  data = data.df.sub
+)
+summary(m.sub)
+plot(m.sub)
+```
+
+We gebruiken nu een puntschatting (posterior mediaan) en fitten het errors-in-variables model opnieuw. Opnieuw is de schatting significant verschillend van de echte waarde (biased). Dit gaat echter voorbij aan de onzekerheid op `sigma_w`.
+
+```{r}
+# puntschatting voor sigma_w
+sigma_w_hat <- as_draws_df(m.sub, variable = "sigma") %>%
+  summarise(sigma = median(sigma)) %>% pull(sigma)
+
+data.df$sigma_w_hat <- sigma_w_hat
+m0_bis <- brm(
+  y ~ me(w, sdx = sigma_w_hat),
+  data = data.df
+)
+summary(m0_bis)
+plot(m0_bis)
+
+hyp <- hypothesis(m0_bis, "bsp_mewsdxEQsigma_w_hat = 1", class = NULL)
+print(hyp); plot(hyp)
+```
+
+
+
+
+
+```{r}
+# # probeerseltje
+# data.df.all <- rbind(
+#   data.df %>% filter(!(Id %in% idx_substudy)) %>%
+#     mutate(Id.sub = 1) %>%
+#     select(Id, y, w, Id.sub),
+#   data.df.sub %>% select(Id, y, w, Id.sub)
+# ) %>% arrange(Id, Id.sub) %>%
+#   # zet y op missing voor replicaten
+#   mutate(y = if_else(Id.sub == 1, y, NA_real_)) %>%
+#   # centreren
+#   mutate(w = scale(w, T, F))
+# 
+# bf_w <- bf(
+#   w     ~ xtrue,
+#   xtrue ~ 0 + (1|Id),
+#   nl = TRUE
+# )
+# 
+# bf_y <- bf(
+#   y     ~ alpha + beta * xtrue,
+#   alpha ~ 1,
+#   beta  ~ 1,
+#   xtrue ~ 0 + (1|Id),
+#   nl = TRUE
+# )
+# 
+# m2 <- brm(
+#   bf_w + bf_y + set_rescor(FALSE),
+#   data = data.df.all,
+#   chains = 4,
+#   cores = 4,
+#   control = list(adapt_delta = 0.95)
+# )
+```
+
+
+```{r}
+library(INLA)
+
+# stacked dataset
+stack <- data.frame(
+  obs = c(na.omit(data.df.all$y), data.df.all$w),
+  type = rep(c("y","w"), c(N, nrow(data.df.all))),
+  Id = c(1:N, data.df.all$Id)
+)
+
+formula <- obs ~ -1 + type +
+  f(Id, model="iid", hyper=list(prec=list(prior="loggamma",param=c(1,0.01))))
+m2 <- inla(formula, data = stack)
+
+x_post <- m2$summary.random$Id$mean
+plot(x_post, data.df$x_true, xlab="True x", ylab="Estimated x*")
+abline(0,1,col="red")
+```
+
+
+
